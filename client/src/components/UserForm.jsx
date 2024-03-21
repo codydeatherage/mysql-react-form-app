@@ -1,43 +1,32 @@
-import React, { useState } from "react";
+import React from "react";
 import LabeledInput from "./LabeledInput";
 import axios from "axios";
+import { useForm } from "react-hook-form";
 
 const UserForm = () => {
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const { register, handleSubmit, reset } = useForm({
+    defaultValues: {
+      username: "",
+      email: "",
+      password: "",
+    },
+  });
 
-  const clearForm = () => {
-    setUsername("");
-    setEmail("");
-    setPassword("");
+  const onSubmitFail = () => {
+    alert("Please complete the form");
   };
 
-  //check that each field is filled
-  const validateForm = () => {
-    //can also be written !!(username && email && password)
-    return Boolean(username && email && password);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    //same as {username: username, email: email, password: password}
-    const payload = { username, email, password };
-    const isValid = validateForm();
-    if (isValid) {
-      try {
-        await axios.post(import.meta.env.VITE_API_URL + "/createUser", payload);
-        clearForm();
-      } catch (e) {
-        console.error(e);
-      }
-    } else {
-      alert("Please complete the form");
+  const onSubmit = async (data) => {
+    try {
+      await axios.post(import.meta.env.VITE_API_URL + "/createUser", data);
+      reset();
+    } catch (e) {
+      console.error(e);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit(onSubmit, onSubmitFail)}>
       <div
         style={{
           display: "flex",
@@ -48,21 +37,9 @@ const UserForm = () => {
           padding: "5px",
         }}
       >
-        <LabeledInput
-          id="username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
-        <LabeledInput
-          id="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <LabeledInput
-          id="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+        <LabeledInput id="username" register={register} required />
+        <LabeledInput id="email" register={register} required />
+        <LabeledInput id="password" register={register} required />
         <div style={{ display: "flex" }}>
           <button type="submit" style={{ marginLeft: "auto" }}>
             Submit
